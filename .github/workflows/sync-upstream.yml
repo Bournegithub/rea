@@ -1,0 +1,28 @@
+name: 同步上游仓库
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'Bournegithub/rea'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 合并上游 main 分支
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api --method POST "repos/$GH_REPO/merge-upstream" \
+            -H "Accept: application/vnd.github+json" \
+            -f branch=main
